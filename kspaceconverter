@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr 18 12:51:24 2019
+
+@author: ashutosh
+"""
+
+import cv2
+import numpy as np
+import cmath
+import math
+from matplotlib import pyplot as plt
+import os
+
+q=1
+path = "Desktop/image_updated/artifactpr/artifact/"
+path1 = "Pictures/2019/03/09/"
+path2 = "Desktop/im/"
+filename = "00001.jpg"
+#for filename in os.listdir(path2):
+imh = path+filename
+img = cv2.imread(imh,0)
+"Desktop/image_updated/GT/00001.jpg"
+"Downloads/abdominal-wall-endometriosis-1.jpg"
+fix = np.fft.fft2(img)
+fshift = np.fft.fftshift(fix)
+imaginary = fshift.imag
+real = fshift.real
+[m,n] = fshift.shape
+phase = np.zeros([m,n],dtype=np.float32)
+kr = np.zeros([m,n],dtype=np.float32)
+dchan = np.zeros([m,n],dtype=np.complex)
+for i in range(m):
+           for j in range(n):
+              phase[i,j] = math.atan2(imaginary[i,j],real[i,j])
+              """   if phase[i,j]<(-math.pi/2) and phase[i,j]>(-math.pi):
+                  phase[i,j] = phase[i,j]+math.pi
+              elif phase[i,j]>math.pi/2 and phase[i,j]<math.pi:
+                  phase[i,j]=phase[i,j]-math.pi"""
+              if phase[i,j]<0:
+                  phase[i,j] = 2*math.pi+phase[i,j]
+              kr[i,j] = phase[i,j]*255/(2*math.pi)        
+ret = 0
+magnitude_spectrum = 20*np.log(np.abs(fshift))
+print(magnitude_spectrum)
+ret = magnitude_spectrum/20
+ret = np.exp(ret)
+print(ret)
+phase_spectrum = (kr)
+plt.figure(1),plt.subplot(111), plt.imshow(kr,  cmap = 'gray')
+plt.figure(1),plt.subplot(111), plt.imshow(magnitude_spectrum,  cmap = 'gray')
+plt.figure(2),plt.subplot(111), plt.imshow(phase_spectrum,  cmap = 'gray')
+aster = magnitude_spectrum+phase_spectrum
+data = np.array([magnitude_spectrum,phase_spectrum,dchan])
+#plt.figure(3),plt.subplot(111), plt.imshow(aster,  cmap = 'gray')
+
+'''savepath = "Desktop/image_updated/kspace/GT/"
+q = ('%05d' %(int(q)+1))
+dst = str(q) + ".jpg"
+finale = savepath+dst
+cv2.imwrite(finale,magnitude_spectrum)'''
